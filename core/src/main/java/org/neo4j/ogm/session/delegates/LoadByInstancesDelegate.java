@@ -12,6 +12,8 @@
  */
 package org.neo4j.ogm.session.delegates;
 
+import static java.util.stream.Collectors.toSet;
+
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -19,6 +21,7 @@ import java.util.Set;
 
 import org.neo4j.ogm.cypher.query.Pagination;
 import org.neo4j.ogm.cypher.query.SortOrder;
+import org.neo4j.ogm.exception.core.MappingException;
 import org.neo4j.ogm.metadata.ClassInfo;
 import org.neo4j.ogm.metadata.FieldInfo;
 import org.neo4j.ogm.session.Neo4jSession;
@@ -40,9 +43,10 @@ public class LoadByInstancesDelegate {
             return objects;
         }
 
+        // this might lead to supertype having neither primaryIndexField or identityField
+        ClassInfo classInfo = findCommonSupertype(objects);
+
         Set<Serializable> ids = new LinkedHashSet<>();
-        Class type = objects.iterator().next().getClass();
-        ClassInfo classInfo = session.metaData().classInfo(type.getName());
         for (Object o : objects) {
             FieldInfo idField;
             if (classInfo.hasPrimaryIndexField()) {
@@ -52,7 +56,41 @@ public class LoadByInstancesDelegate {
             }
             ids.add((Serializable) idField.readProperty(o));
         }
-        return session.loadAll(type, ids, sortOrder, pagination, depth);
+        return session.loadAll((Class<T>) classInfo.getUnderlyingClass(), ids, sortOrder, pagination, depth);
+    }
+
+    private <T> ClassInfo findCommonSupertype(Collection<T> objects) {
+        Set<ClassInfo> infos = objects.stream()
+            .map(object -> object.getClass()).distinct()
+            .map(type -> session.metaData().classInfo(type.getName()))
+            .collect(toSet());
+
+        if (infos.size() == 1) {
+            return infos.iterator().next();
+        } else {
+
+            ClassInfo supertype = null;
+            for (ClassInfo info : infos) {
+
+                if (supertype == null) {
+                    supertype = getSupertype(info);
+                } else {
+                    if (!supertype.equals(getSupertype(info))) {
+                        throw new MappingException("Can't find single supertype for " + infos);
+                    }
+                }
+            }
+            // should we check that if supertype is abstract it has @NodeEntity annotation?
+            return supertype;
+        }
+    }
+
+    private ClassInfo getSupertype(ClassInfo info) {
+        ClassInfo current = info;
+        while (current.directSuperclass() != null) {
+            current = current.directSuperclass();
+        }
+        return current;
     }
 
     public <T> Collection<T> loadAll(Collection<T> objects) {
