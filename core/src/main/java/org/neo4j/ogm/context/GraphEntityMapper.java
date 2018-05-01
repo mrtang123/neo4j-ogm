@@ -143,20 +143,20 @@ public class GraphEntityMapper implements ResponseMapper<GraphModel> {
     private void mapNodes(GraphModel graphModel, Set<Long> nodeIds) {
 
         for (Node node : graphModel.getNodes()) {
+            Object entity = entityFactory.newObject(node);
+            setIdentity(entity, node.getId());
+            setProperties(node.getPropertyList(), entity);
+            setLabels(node, entity);
             if (!nodeIds.contains(node.getId())) {
-                Object entity = mappingContext.getNodeEntity(node.getId());
                 try {
-                    if (entity == null) {
-                        entity = entityFactory.newObject(node);
-                        setIdentity(entity, node.getId());
-                        setProperties(node.getPropertyList(), entity);
-                        setLabels(node, entity);
-                        mappingContext.addNodeEntity(entity, node.getId());
-                    }
+                    mappingContext.addNodeEntity(entity, node.getId());
                     nodeIds.add(node.getId());
                 } catch (BaseClassNotFoundException e) {
                     logger.debug(e.getMessage());
                 }
+            } else if(mappingContext.isDirty(entity)) {
+                mappingContext.removeEntity(entity);
+                mappingContext.addNodeEntity(entity, node.getId());
             }
         }
     }

@@ -86,4 +86,11 @@
         </dependency>
 
     </dependencies>
+    <distributionManagement>
+        <snapshotRepository>
+            <id>nexus_snapshot</id>
+            <url>http://dev-1:8081/repository/maven-snapshots/</url>
+            <uniqueVersion>false</uniqueVersion>
+        </snapshotRepository>
+    </distributionManagement>
 </project>

@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.neo4j.ogm.MetaData;
 import org.neo4j.ogm.classloader.MetaDataClassLoader;
@@ -72,7 +73,7 @@ public class MappingContext {
         this.nodeEntityRegister = new EntityRegister<>();
         this.primaryIndexNodeRegister = new EntityRegister<>();
         this.relationshipEntityRegister = new EntityRegister<>();
-        this.relationshipRegister = new HashSet<>();
+        this.relationshipRegister = new CopyOnWriteArraySet<>();
         this.labelHistoryRegister = new LabelHistoryRegister();
     }
 

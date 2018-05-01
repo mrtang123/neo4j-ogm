@@ -16,6 +16,7 @@ package org.neo4j.ogm.context.register;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +29,7 @@ public class EntityRegister<T> {
 
     private final Logger LOGGER = LoggerFactory.getLogger(EntityRegister.class);
 
-    private final Map<T, Object> register = new HashMap<>();
+    private final Map<T, Object> register = new ConcurrentHashMap<>();
 
     public Object get(T id) {
         return register.get(id);
