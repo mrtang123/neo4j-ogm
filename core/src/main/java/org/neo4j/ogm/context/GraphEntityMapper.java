@@ -147,10 +147,9 @@ public class GraphEntityMapper implements ResponseMapper<GraphModel> {
             setIdentity(entity, node.getId());
             setProperties(node.getPropertyList(), entity);
             setLabels(node, entity);
-            if (!nodeIds.contains(node.getId())) {
+            if (mappingContext.getNodeEntity(node.getId()) == null) {
                 try {
                     mappingContext.addNodeEntity(entity, node.getId());
-                    nodeIds.add(node.getId());
                 } catch (BaseClassNotFoundException e) {
                     logger.debug(e.getMessage());
                 }
@@ -158,6 +157,7 @@ public class GraphEntityMapper implements ResponseMapper<GraphModel> {
                 mappingContext.removeEntity(entity);
                 mappingContext.addNodeEntity(entity, node.getId());
             }
+            nodeIds.add(node.getId());
         }
     }
 
