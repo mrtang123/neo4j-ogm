@@ -73,7 +73,7 @@ public class MappingContext {
         this.nodeEntityRegister = new EntityRegister<>();
         this.primaryIndexNodeRegister = new EntityRegister<>();
         this.relationshipEntityRegister = new EntityRegister<>();
-        this.relationshipRegister = new CopyOnWriteArraySet<>();
+        this.relationshipRegister = new HashSet<>();
         this.labelHistoryRegister = new LabelHistoryRegister();
     }
 
